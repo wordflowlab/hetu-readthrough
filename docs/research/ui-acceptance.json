@@ -1,8 +1,8 @@
 {
   "date": "2026-11-18",
   "plugin_id": "org.wordflowlab.readthrough",
-  "package_sha256": "3d8e18c7bdfb5ead07017efbd1439402b8f885f6f8c466e44744a310251bdca3",
-  "host_version": "hetu 0.11.7",
+  "package_sha256": "5723789aa1a672cdf9d1fb2e3a0756e7f2b194a67e50815d6ea5e8543dce8bd1",
+  "host_version": "hetu 0.11.11",
   "platform": "darwin",
   "architecture": "arm64",
   "tabs": [
@@ -15,7 +15,7 @@
   "empty_state": true,
   "professional_actions": true,
   "artifact_files": [
-    "成果.html"
+    "声音格式验收样本.wav"
   ],
   "themes": [
     "light",

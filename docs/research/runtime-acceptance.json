@@ -2,8 +2,8 @@
   "date": "2026-11-18",
   "plugin_id": "org.wordflowlab.readthrough",
   "version": "0.1.0",
-  "package_sha256": "a3f47781c97d097ae69bb10a5b7b8ccd43912365c7cc930614535857ded7e835",
-  "host_version": "hetu 0.11.7",
+  "package_sha256": "5723789aa1a672cdf9d1fb2e3a0756e7f2b194a67e50815d6ea5e8543dce8bd1",
+  "host_version": "hetu 0.11.11",
   "platform": "darwin",
   "architecture": "arm64",
   "actions": [
