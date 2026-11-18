@@ -1,0 +1,1968 @@
+{
+  "manifest_version": 1,
+  "host_api": "1",
+  "id": "org.wordflowlab.readthrough",
+  "version": "0.1.0",
+  "display": {
+    "zh-CN": "朗读审阅",
+    "en": "Readthrough"
+  },
+  "description": {
+    "zh-CN": "把实际朗读音频、原文区间和听读意见联系起来，定位拗口与对白问题。",
+    "en": "Readthrough with fixed sources and external Agent workflows."
+  },
+  "license": "Apache-2.0",
+  "dependencies": [],
+  "work_kinds": [
+    "novel"
+  ],
+  "runtime": {
+    "entry": "backend.mjs"
+  },
+  "contributions": {
+    "views": [
+      {
+        "id": "main",
+        "title": "朗读审阅",
+        "entry": "index.html",
+        "object_kinds": [
+          "readthrough"
+        ],
+        "navigation": "integrated"
+      }
+    ],
+    "data": [
+      {
+        "kind": "readthrough",
+        "schema_version": "1.0.0",
+        "schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "format_version": {
+              "const": 1
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "plans": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "ranges": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "source_index": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 63
+                        },
+                        "byte_start": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "byte_end": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "quote": {
+                          "type": "string",
+                          "minLength": 0,
+                          "maxLength": 32000
+                        }
+                      },
+                      "required": [
+                        "source_index",
+                        "byte_start",
+                        "byte_end",
+                        "quote"
+                      ]
+                    },
+                    "maxItems": 100
+                  },
+                  "voice_note": {
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 4000
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "planned",
+                      "recorded"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "title",
+                  "ranges",
+                  "voice_note",
+                  "status"
+                ]
+              },
+              "maxItems": 300
+            },
+            "recordings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "plan_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "audio_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "duration_ms": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 3600000
+                  },
+                  "sample_rate": {
+                    "type": "integer",
+                    "minimum": 8000,
+                    "maximum": 192000
+                  },
+                  "channels": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2
+                  },
+                  "bits": {
+                    "type": "string",
+                    "enum": [
+                      "8",
+                      "16",
+                      "24",
+                      "32"
+                    ]
+                  },
+                  "asset_source_index": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 99
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "inline_wav": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "origin": {
+                    "type": "string",
+                    "enum": [
+                      "external_tool",
+                      "author_recording"
+                    ]
+                  },
+                  "speech_checked": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "id",
+                  "title",
+                  "plan_id",
+                  "audio_sha256",
+                  "duration_ms",
+                  "sample_rate",
+                  "channels",
+                  "bits",
+                  "asset_source_index",
+                  "inline_wav",
+                  "origin",
+                  "speech_checked"
+                ]
+              },
+              "maxItems": 300
+            },
+            "mappings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "recording_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "source_range": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "source_index": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 63
+                      },
+                      "byte_start": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "byte_end": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "quote": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 32000
+                      }
+                    },
+                    "required": [
+                      "source_index",
+                      "byte_start",
+                      "byte_end",
+                      "quote"
+                    ]
+                  },
+                  "start_ms": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100000000
+                  },
+                  "end_ms": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100000000
+                  },
+                  "method": {
+                    "type": "string",
+                    "enum": [
+                      "segment_boundary",
+                      "forced_alignment",
+                      "estimated"
+                    ]
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 4000
+                  }
+                },
+                "required": [
+                  "id",
+                  "recording_id",
+                  "source_range",
+                  "start_ms",
+                  "end_ms",
+                  "method",
+                  "note"
+                ]
+              },
+              "maxItems": 300
+            },
+            "notes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "recording_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "mapping_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "start_ms": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100000000
+                  },
+                  "end_ms": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100000000
+                  },
+                  "comment": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 8000
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "open",
+                      "addressed"
+                    ]
+                  },
+                  "resolution": {
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 4000
+                  }
+                },
+                "required": [
+                  "id",
+                  "title",
+                  "recording_id",
+                  "mapping_id",
+                  "start_ms",
+                  "end_ms",
+                  "comment",
+                  "status",
+                  "resolution"
+                ]
+              },
+              "maxItems": 300
+            },
+            "basis_refs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "owner_plugin_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "object_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "owner_plugin_id",
+                  "object_id",
+                  "revision",
+                  "sha256"
+                ]
+              },
+              "maxItems": 20
+            }
+          },
+          "required": [
+            "format_version",
+            "title",
+            "plans",
+            "recordings",
+            "mappings",
+            "notes",
+            "basis_refs"
+          ]
+        }
+      }
+    ],
+    "actions": [
+      {
+        "id": "list_projects",
+        "title": "查找专业工程",
+        "effect": "read",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 1000
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 4000
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "id": "get_project",
+        "title": "读取固定专业工程",
+        "effect": "read",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "object_id"
+          ]
+        }
+      },
+      {
+        "id": "save_project",
+        "title": "保存完整专业工程",
+        "effect": "managed_write",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "expected_revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expected_sha256": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 64
+            },
+            "operation_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "source_refs": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              },
+              "maxItems": 64
+            },
+            "content": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "format_version": {
+                  "const": 1
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "plans": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "ranges": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "source_index": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 63
+                            },
+                            "byte_start": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "byte_end": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "quote": {
+                              "type": "string",
+                              "minLength": 0,
+                              "maxLength": 32000
+                            }
+                          },
+                          "required": [
+                            "source_index",
+                            "byte_start",
+                            "byte_end",
+                            "quote"
+                          ]
+                        },
+                        "maxItems": 100
+                      },
+                      "voice_note": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 4000
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "planned",
+                          "recorded"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "title",
+                      "ranges",
+                      "voice_note",
+                      "status"
+                    ]
+                  },
+                  "maxItems": 300
+                },
+                "recordings": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "plan_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      },
+                      "audio_sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "duration_ms": {
+                        "type": "number",
+                        "minimum": 1,
+                        "maximum": 3600000
+                      },
+                      "sample_rate": {
+                        "type": "integer",
+                        "minimum": 8000,
+                        "maximum": 192000
+                      },
+                      "channels": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 2
+                      },
+                      "bits": {
+                        "type": "string",
+                        "enum": [
+                          "8",
+                          "16",
+                          "24",
+                          "32"
+                        ]
+                      },
+                      "asset_source_index": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 99
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "inline_wav": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200000
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "origin": {
+                        "type": "string",
+                        "enum": [
+                          "external_tool",
+                          "author_recording"
+                        ]
+                      },
+                      "speech_checked": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "title",
+                      "plan_id",
+                      "audio_sha256",
+                      "duration_ms",
+                      "sample_rate",
+                      "channels",
+                      "bits",
+                      "asset_source_index",
+                      "inline_wav",
+                      "origin",
+                      "speech_checked"
+                    ]
+                  },
+                  "maxItems": 300
+                },
+                "mappings": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      },
+                      "recording_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      },
+                      "source_range": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "source_index": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 63
+                          },
+                          "byte_start": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "byte_end": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "quote": {
+                            "type": "string",
+                            "minLength": 0,
+                            "maxLength": 32000
+                          }
+                        },
+                        "required": [
+                          "source_index",
+                          "byte_start",
+                          "byte_end",
+                          "quote"
+                        ]
+                      },
+                      "start_ms": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100000000
+                      },
+                      "end_ms": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100000000
+                      },
+                      "method": {
+                        "type": "string",
+                        "enum": [
+                          "segment_boundary",
+                          "forced_alignment",
+                          "estimated"
+                        ]
+                      },
+                      "note": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 4000
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "recording_id",
+                      "source_range",
+                      "start_ms",
+                      "end_ms",
+                      "method",
+                      "note"
+                    ]
+                  },
+                  "maxItems": 300
+                },
+                "notes": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "recording_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      },
+                      "mapping_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      },
+                      "start_ms": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100000000
+                      },
+                      "end_ms": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100000000
+                      },
+                      "comment": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 8000
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "open",
+                          "addressed"
+                        ]
+                      },
+                      "resolution": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 4000
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "title",
+                      "recording_id",
+                      "mapping_id",
+                      "start_ms",
+                      "end_ms",
+                      "comment",
+                      "status",
+                      "resolution"
+                    ]
+                  },
+                  "maxItems": 300
+                },
+                "basis_refs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "owner_plugin_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                      },
+                      "object_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      },
+                      "revision": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "owner_plugin_id",
+                      "object_id",
+                      "revision",
+                      "sha256"
+                    ]
+                  },
+                  "maxItems": 20
+                }
+              },
+              "required": [
+                "format_version",
+                "title",
+                "plans",
+                "recordings",
+                "mappings",
+                "notes",
+                "basis_refs"
+              ]
+            }
+          },
+          "required": [
+            "expected_revision",
+            "expected_sha256",
+            "operation_key",
+            "content"
+          ]
+        }
+      },
+      {
+        "id": "put_plan",
+        "title": "维护朗读计划",
+        "effect": "managed_write",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "expected_revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expected_sha256": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 64
+            },
+            "operation_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "source_refs": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              },
+              "maxItems": 64
+            },
+            "plan": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "ranges": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "source_index": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 63
+                      },
+                      "byte_start": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "byte_end": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "quote": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 32000
+                      }
+                    },
+                    "required": [
+                      "source_index",
+                      "byte_start",
+                      "byte_end",
+                      "quote"
+                    ]
+                  },
+                  "maxItems": 100
+                },
+                "voice_note": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 4000
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "planned",
+                    "recorded"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "title",
+                "ranges",
+                "voice_note",
+                "status"
+              ]
+            }
+          },
+          "required": [
+            "object_id",
+            "expected_revision",
+            "expected_sha256",
+            "operation_key",
+            "plan"
+          ]
+        }
+      },
+      {
+        "id": "remove_plan",
+        "title": "移除朗读计划",
+        "effect": "managed_write",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "expected_revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expected_sha256": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 64
+            },
+            "operation_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "source_refs": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              },
+              "maxItems": 64
+            },
+            "plan_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [
+            "object_id",
+            "expected_revision",
+            "expected_sha256",
+            "operation_key",
+            "plan_id"
+          ]
+        }
+      },
+      {
+        "id": "put_recording",
+        "title": "维护实际声音",
+        "effect": "managed_write",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "expected_revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expected_sha256": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 64
+            },
+            "operation_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "source_refs": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              },
+              "maxItems": 64
+            },
+            "recording": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "plan_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "audio_sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "duration_ms": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 3600000
+                },
+                "sample_rate": {
+                  "type": "integer",
+                  "minimum": 8000,
+                  "maximum": 192000
+                },
+                "channels": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 2
+                },
+                "bits": {
+                  "type": "string",
+                  "enum": [
+                    "8",
+                    "16",
+                    "24",
+                    "32"
+                  ]
+                },
+                "asset_source_index": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 99
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "inline_wav": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "origin": {
+                  "type": "string",
+                  "enum": [
+                    "external_tool",
+                    "author_recording"
+                  ]
+                },
+                "speech_checked": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "title",
+                "plan_id",
+                "audio_sha256",
+                "duration_ms",
+                "sample_rate",
+                "channels",
+                "bits",
+                "asset_source_index",
+                "inline_wav",
+                "origin",
+                "speech_checked"
+              ]
+            }
+          },
+          "required": [
+            "object_id",
+            "expected_revision",
+            "expected_sha256",
+            "operation_key",
+            "recording"
+          ]
+        }
+      },
+      {
+        "id": "remove_recording",
+        "title": "移除实际声音",
+        "effect": "managed_write",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "expected_revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expected_sha256": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 64
+            },
+            "operation_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "source_refs": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              },
+              "maxItems": 64
+            },
+            "recording_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [
+            "object_id",
+            "expected_revision",
+            "expected_sha256",
+            "operation_key",
+            "recording_id"
+          ]
+        }
+      },
+      {
+        "id": "put_mapping",
+        "title": "维护原文时间映射",
+        "effect": "managed_write",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "expected_revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expected_sha256": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 64
+            },
+            "operation_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "source_refs": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              },
+              "maxItems": 64
+            },
+            "mapping": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "recording_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "source_range": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "source_index": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 63
+                    },
+                    "byte_start": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "byte_end": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "quote": {
+                      "type": "string",
+                      "minLength": 0,
+                      "maxLength": 32000
+                    }
+                  },
+                  "required": [
+                    "source_index",
+                    "byte_start",
+                    "byte_end",
+                    "quote"
+                  ]
+                },
+                "start_ms": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100000000
+                },
+                "end_ms": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100000000
+                },
+                "method": {
+                  "type": "string",
+                  "enum": [
+                    "segment_boundary",
+                    "forced_alignment",
+                    "estimated"
+                  ]
+                },
+                "note": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 4000
+                }
+              },
+              "required": [
+                "id",
+                "recording_id",
+                "source_range",
+                "start_ms",
+                "end_ms",
+                "method",
+                "note"
+              ]
+            }
+          },
+          "required": [
+            "object_id",
+            "expected_revision",
+            "expected_sha256",
+            "operation_key",
+            "mapping"
+          ]
+        }
+      },
+      {
+        "id": "remove_mapping",
+        "title": "移除原文时间映射",
+        "effect": "managed_write",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "expected_revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expected_sha256": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 64
+            },
+            "operation_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "source_refs": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              },
+              "maxItems": 64
+            },
+            "mapping_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [
+            "object_id",
+            "expected_revision",
+            "expected_sha256",
+            "operation_key",
+            "mapping_id"
+          ]
+        }
+      },
+      {
+        "id": "put_note",
+        "title": "维护听读意见",
+        "effect": "managed_write",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "expected_revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expected_sha256": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 64
+            },
+            "operation_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "source_refs": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              },
+              "maxItems": 64
+            },
+            "note": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "recording_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "mapping_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "start_ms": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100000000
+                },
+                "end_ms": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100000000
+                },
+                "comment": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 8000
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "open",
+                    "addressed"
+                  ]
+                },
+                "resolution": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 4000
+                }
+              },
+              "required": [
+                "id",
+                "title",
+                "recording_id",
+                "mapping_id",
+                "start_ms",
+                "end_ms",
+                "comment",
+                "status",
+                "resolution"
+              ]
+            }
+          },
+          "required": [
+            "object_id",
+            "expected_revision",
+            "expected_sha256",
+            "operation_key",
+            "note"
+          ]
+        }
+      },
+      {
+        "id": "remove_note",
+        "title": "移除听读意见",
+        "effect": "managed_write",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "expected_revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expected_sha256": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 64
+            },
+            "operation_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "source_refs": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              },
+              "maxItems": 64
+            },
+            "note_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [
+            "object_id",
+            "expected_revision",
+            "expected_sha256",
+            "operation_key",
+            "note_id"
+          ]
+        }
+      },
+      {
+        "id": "inspect_wav",
+        "title": "核验实际PCM WAV声音字节",
+        "effect": "read",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "file": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "filename": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                "base64": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 650000
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "filename",
+                "base64",
+                "sha256"
+              ]
+            }
+          },
+          "required": [
+            "file"
+          ]
+        }
+      },
+      {
+        "id": "check_timeline",
+        "title": "检查声音与原文映射",
+        "effect": "read",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "object_id"
+          ]
+        }
+      },
+      {
+        "id": "locate_audio",
+        "title": "定位听读意见对应原文",
+        "effect": "read",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "recording_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "time_ms": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100000000
+            }
+          },
+          "required": [
+            "object_id",
+            "recording_id",
+            "time_ms"
+          ]
+        }
+      },
+      {
+        "id": "export_audio",
+        "title": "导出固定内嵌声音",
+        "effect": "read",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "recording_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "offset": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "max_bytes": {
+              "type": "integer",
+              "minimum": 4,
+              "maximum": 100000
+            }
+          },
+          "required": [
+            "object_id",
+            "recording_id"
+          ]
+        }
+      },
+      {
+        "id": "get_source",
+        "title": "读取固定来源",
+        "effect": "read",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "source_index": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 63
+            }
+          },
+          "required": [
+            "object_id",
+            "source_index"
+          ]
+        }
+      },
+      {
+        "id": "get_basis",
+        "title": "读取固定上游专业依据",
+        "effect": "read",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "basis_index": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 19
+            }
+          },
+          "required": [
+            "object_id",
+            "basis_index"
+          ]
+        }
+      },
+      {
+        "id": "compare_versions",
+        "title": "比较专业修订",
+        "effect": "read",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "from_revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "to_revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "object_id",
+            "from_revision",
+            "to_revision"
+          ]
+        }
+      },
+      {
+        "id": "export_project",
+        "title": "导出固定专业报告",
+        "effect": "read",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "format": {
+              "type": "string",
+              "enum": [
+                "json",
+                "markdown",
+                "html"
+              ]
+            },
+            "offset": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4000000
+            },
+            "max_bytes": {
+              "type": "integer",
+              "minimum": 4,
+              "maximum": 100000
+            }
+          },
+          "required": [
+            "object_id",
+            "format"
+          ]
+        }
+      },
+      {
+        "id": "build_context",
+        "title": "准备有界专业上下文",
+        "effect": "read",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "goal": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            },
+            "max_chars": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 200000
+            }
+          },
+          "required": [
+            "object_id",
+            "goal",
+            "max_chars"
+          ]
+        }
+      },
+      {
+        "id": "create_handoff",
+        "title": "生成固定专业交接",
+        "effect": "read",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "object_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "goal": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "object_id",
+            "goal"
+          ]
+        }
+      },
+      {
+        "id": "get_operation",
+        "title": "沿原键回读操作",
+        "effect": "read",
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "operation_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [
+            "operation_key"
+          ]
+        }
+      }
+    ],
+    "skills": [
+      {
+        "id": "readthrough",
+        "name": "hetu-readthrough",
+        "description": "把实际朗读音频、原文区间和听读意见联系起来，定位拗口与对白问题。",
+        "entry": "skills/hetu-readthrough/SKILL.md"
+      }
+    ]
+  }
+}

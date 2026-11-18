@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-18",
+  "plugin_id": "org.wordflowlab.readthrough",
+  "package_sha256": "3d8e18c7bdfb5ead07017efbd1439402b8f885f6f8c466e44744a310251bdca3",
+  "host_version": "hetu 0.11.7",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "tabs": [
+    "朗读计划",
+    "声音与原文",
+    "听读意见",
+    "映射检查",
+    "接续创作"
+  ],
+  "empty_state": true,
+  "professional_actions": true,
+  "artifact_files": [
+    "成果.html"
+  ],
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "widths": [
+    1360,
+    760
+  ],
+  "reduced_transparency": true,
+  "CAS_preserves_input": true,
+  "explicit_rebase": true,
+  "close_reopen": true,
+  "dirty_buffer_restore": true,
+  "page_errors": [],
+  "limits": [
+    "原生窗口材质、系统输入法及Windows/Linux未由本测试证明"
+  ]
+}
